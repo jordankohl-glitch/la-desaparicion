@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Desaparición — A Spanish Mystery</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0a08;
+    --paper: #e8dcc0;
+    --paper-dark: #c9b896;
+    --ink: #1a1410;
+    --blood: #6b1f1f;
+    --candle: #d4a04a;
+    --shadow: #3d2817;
+    --night: #1f1611;
+    --whisper: #8a7560;
+  }
+
+  body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    background: var(--bg);
+    color: var(--paper);
+    min-height: 100vh;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  /* ATMOSPHERE LAYER */
+  .vignette {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.7) 100%);
+    z-index: 1;
+  }
+
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.08;
+    background-image:
+      repeating-radial-gradient(circle at 0 0, transparent 0, rgba(255,255,255,0.5) 1px, transparent 2px);
+    background-size: 3px 3px;
+  }
+
+  /* MAIN LAYOUT */
+  .game {
+    position: relative;
+    z-index: 3;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 16px 14px 100px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .scene-header {
+    text-align: center;
+    padding: 8px 0 14px;
+    border-bottom: 1px solid var(--shadow);
+    margin-bottom: 18px;
+  }
+
+  .day-marker {
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--candle);
+    text-transform: uppercase;
+  }
+
+  .location {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--paper);
+    margin-top: 4px;
+  }
+
+  /* SCENE DESCRIPTION (English narration) */
+  .scene-desc {
+    font-style: italic;
+    color: var(--whisper);
+    font-size: 16px;
+    margin-bottom: 20px;
+    padding: 0 8px;
+    line-height: 1.6;
+  }
+
+  .scene-desc::first-letter {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--candle);
+    float: left;
+    line-height: 1;
+    margin-right: 6px;
+    margin-top: 2px;
+  }
+
+  /* SPANISH DIALOGUE */
+  .dialogue {
+    margin: 18px 0;
+    animation: fadeIn 0.6s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .speaker-line {
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--candle);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .speaker-line .mood {
+    color: var(--whisper);
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0.05em;
+  }
+
+  .spanish {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--paper);
+    line-height: 1.45;
+    padding: 4px 0;
+  }
+
+  /* Hoverable / tappable Spanish words */
+  .word {
+    position: relative;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+    padding: 1px 2px;
+    border-radius: 2px;
+  }
+
+  .word:hover, .word.touched {
+    color: var(--candle);
+    background: rgba(212, 160, 74, 0.1);
+  }
+
+  .word.known {
+    border-bottom: 1px dotted var(--whisper);
+  }
+
+  .word.revealed {
+    color: var(--candle);
+  }
+
+  .word .gloss {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    font-style: normal;
+    padding: 4px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--candle);
+    white-space: nowrap;
+    margin-bottom: 4px;
+    z-index: 10;
+    letter-spacing: 0.05em;
+  }
+
+  .word.touched .gloss,
+  .word:hover .gloss {
+    display: block;
+  }
+
+  /* CHOICES */
+  .choices {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .choice-prompt {
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--blood);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .choice {
+    background: linear-gradient(180deg, rgba(232, 220, 192, 0.05), rgba(232, 220, 192, 0.02));
+    border: 1px solid var(--shadow);
+    border-left: 3px solid var(--candle);
+    padding: 14px 16px;
+    cursor: pointer;
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--paper);
+    font-size: 16px;
+    text-align: left;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+
+  .choice:hover {
+    background: linear-gradient(180deg, rgba(212, 160, 74, 0.1), rgba(212, 160, 74, 0.03));
+    border-left-color: var(--blood);
+    transform: translateX(2px);
+  }
+
+  .choice .choice-es {
+    display: block;
+    font-style: italic;
+    color: var(--candle);
+    font-size: 17px;
+    margin-bottom: 3px;
+  }
+
+  .choice .choice-en {
+    display: block;
+    color: var(--whisper);
+    font-size: 13px;
+    font-family: 'Special Elite', monospace;
+    letter-spacing: 0.03em;
+  }
+
+  .choice.requires-word {
+    border-left-color: var(--blood);
+    opacity: 0.5;
+  }
+
+  .choice.requires-word .choice-es {
+    color: var(--whisper);
+  }
+
+  /* CONTINUE BUTTON */
+  .continue {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--candle);
+    color: var(--candle);
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    padding: 14px;
+    margin-top: 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .continue:hover {
+    background: var(--candle);
+    color: var(--bg);
+  }
+
+  /* JOURNAL */
+  .journal-tab {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 50;
+  }
+
+  .tab-btn {
+    background: var(--ink);
+    border: 1px solid var(--candle);
+    color: var(--candle);
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    padding: 10px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  .tab-btn:hover {
+    background: var(--candle);
+    color: var(--bg);
+  }
+
+  .tab-btn .count {
+    color: var(--blood);
+    font-weight: bold;
+  }
+
+  /* JOURNAL OVERLAY */
+  .journal {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 10, 8, 0.97);
+    z-index: 100;
+    display: none;
+    overflow-y: auto;
+    padding: 30px 20px 100px;
+    backdrop-filter: blur(4px);
+  }
+
+  .journal.open { display: block; }
+
+  .journal-content {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .journal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 28px;
+    text-align: center;
+    color: var(--candle);
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+
+  .journal-sub {
+    text-align: center;
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--whisper);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .journal-section {
+    margin-bottom: 28px;
+  }
+
+  .section-label {
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--blood);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--shadow);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+
+  .clue {
+    padding: 10px 12px;
+    background: rgba(212, 160, 74, 0.05);
+    border-left: 2px solid var(--candle);
+    margin-bottom: 8px;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .clue .source {
+    display: block;
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--whisper);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .vocab-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 4px;
+    border-bottom: 1px dotted var(--shadow);
+    font-size: 16px;
+  }
+
+  .vocab-entry .v-es {
+    font-style: italic;
+    color: var(--candle);
+  }
+
+  .vocab-entry .v-en {
+    color: var(--paper);
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+  }
+
+  .character-card {
+    background: rgba(232, 220, 192, 0.04);
+    border: 1px solid var(--shadow);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .character-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-style: italic;
+    color: var(--candle);
+    font-size: 18px;
+  }
+
+  .character-desc {
+    font-size: 14px;
+    color: var(--whisper);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  .character-trust {
+    margin-top: 6px;
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .trust-positive { color: #8a9b6e; }
+  .trust-negative { color: var(--blood); }
+  .trust-neutral { color: var(--whisper); }
+
+  .close-journal {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--candle);
+    color: var(--candle);
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    padding: 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-top: 20px;
+  }
+
+  /* TITLE SCREEN */
+  .title-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    text-align: center;
+  }
+
+  .title-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(212, 160, 74, 0.15), transparent 50%),
+      radial-gradient(circle at 70% 80%, rgba(107, 31, 31, 0.15), transparent 60%);
+  }
+
+  .title-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .title-screen h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 48px;
+    color: var(--paper);
+    margin-bottom: 6px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .title-screen .sub {
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.4em;
+    color: var(--candle);
+    text-transform: uppercase;
+    margin-bottom: 30px;
+  }
+
+  .title-screen p {
+    max-width: 400px;
+    font-size: 17px;
+    color: var(--whisper);
+    font-style: italic;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+
+  .start-btn {
+    margin-top: 30px;
+    background: transparent;
+    border: 1px solid var(--candle);
+    color: var(--candle);
+    font-family: 'Special Elite', monospace;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    padding: 16px 40px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+
+  .start-btn:hover {
+    background: var(--candle);
+    color: var(--bg);
+    letter-spacing: 0.5em;
+  }
+
+  .tip {
+    margin-top: 24px;
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--shadow);
+    text-transform: uppercase;
+    max-width: 300px;
+    line-height: 1.6;
+  }
+
+  /* ENDING */
+  .ending {
+    text-align: center;
+    padding: 30px 0;
+  }
+
+  .ending-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 32px;
+    color: var(--candle);
+    margin-bottom: 16px;
+  }
+
+  .ending-text {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--paper);
+    margin-bottom: 16px;
+  }
+
+  .ending-stats {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid var(--shadow);
+    background: rgba(232, 220, 192, 0.03);
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--whisper);
+  }
+
+  .ending-stats strong {
+    color: var(--candle);
+    font-weight: normal;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background: var(--ink);
+    color: var(--candle);
+    padding: 10px 18px;
+    border: 1px solid var(--candle);
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    z-index: 200;
+    transition: transform 0.3s ease;
+    text-transform: uppercase;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<div class="title-screen" id="title-screen">
+  <div class="title-content">
+    <h1>La Desaparición</h1>
+    <div class="sub">— A Spanish Mystery —</div>
+    <p>A woman is missing from the mountain village of San Esteban. Nobody speaks English.</p>
+    <p>Tap any Spanish word to translate it. The locals are watching what you choose to understand.</p>
+    <button class="start-btn" onclick="startGame()">Begin</button>
+    <div class="tip">Tap words • Choose carefully<br>Trust earns truth</div>
+  </div>
+</div>
+
+<div class="game" id="game"></div>
+
+<div class="journal-tab">
+  <button class="tab-btn" onclick="openJournal('clues')">📓 Clues <span class="count" id="tab-clues">0</span></button>
+  <button class="tab-btn" onclick="openJournal('vocab')">📖 Vocab <span class="count" id="tab-vocab">0</span></button>
+  <button class="tab-btn" onclick="openJournal('cast')">👥 Cast</button>
+</div>
+
+<div class="journal" id="journal">
+  <div class="journal-content" id="journal-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =====================================================================
+// VOCABULARY — every Spanish word the player encounters
+// =====================================================================
+const VOCAB = {
+  // greetings & basics
+  'buenas': 'good (greeting)', 'tardes': 'afternoons', 'noches': 'nights', 'días': 'days',
+  'hola': 'hello', 'adiós': 'goodbye', 'gracias': 'thanks', 'por': 'for/by', 'favor': 'favor',
+  'sí': 'yes', 'no': 'no', 'soy': 'I am', 'eres': 'you are', 'es': 'is', 'está': 'is (at/in state)',
+  'estás': 'you are (state)', 'estoy': 'I am (state)', 'son': 'are', 'están': 'they are',
+  'tengo': 'I have', 'tiene': 'has', 'tienes': 'you have', 'hay': 'there is/are',
+  // people
+  'señor': 'mister/sir', 'señora': 'madam', 'mujer': 'woman', 'hombre': 'man',
+  'niña': 'girl', 'niño': 'boy', 'amiga': 'friend (f.)', 'amigo': 'friend (m.)',
+  'esposa': 'wife', 'esposo': 'husband', 'hija': 'daughter', 'hijo': 'son',
+  'padre': 'father', 'madre': 'mother', 'hermana': 'sister', 'hermano': 'brother',
+  'sacerdote': 'priest', 'forastero': 'stranger', 'extranjero': 'foreigner',
+  // the mystery
+  'desaparecida': 'disappeared/missing', 'muerta': 'dead', 'viva': 'alive',
+  'asesino': 'murderer', 'asesinato': 'murder', 'sangre': 'blood', 'cuerpo': 'body',
+  'mentira': 'lie', 'verdad': 'truth', 'secreto': 'secret', 'miedo': 'fear',
+  'culpa': 'guilt/blame', 'inocente': 'innocent', 'culpable': 'guilty',
+  'testigo': 'witness', 'pista': 'clue', 'prueba': 'proof',
+  // places
+  'pueblo': 'village', 'casa': 'house', 'iglesia': 'church', 'taberna': 'tavern',
+  'bosque': 'forest', 'río': 'river', 'montaña': 'mountain', 'camino': 'path/road',
+  'puerta': 'door', 'ventana': 'window', 'habitación': 'room', 'cocina': 'kitchen',
+  // time
+  'ayer': 'yesterday', 'hoy': 'today', 'anoche': 'last night', 'mañana': 'tomorrow/morning',
+  'noche': 'night', 'día': 'day', 'tarde': 'afternoon/late', 'temprano': 'early',
+  'siempre': 'always', 'nunca': 'never', 'antes': 'before', 'después': 'after',
+  // verbs (common)
+  'vi': 'I saw', 'vio': 'he/she saw', 'vimos': 'we saw', 'viste': 'you saw',
+  'fue': 'he/she went/was', 'fui': 'I went/was', 'fueron': 'they went/were',
+  'sabe': 'knows', 'sé': 'I know', 'sabes': 'you know', 'sabía': 'I/he/she knew',
+  'dice': 'says', 'dijo': 'said', 'digo': 'I say', 'dicen': 'they say',
+  'oye': 'hears/listen', 'oí': 'I heard', 'oyó': 'he/she heard',
+  'busca': 'searches/look', 'busco': 'I search', 'buscar': 'to search',
+  'ayuda': 'helps/help', 'ayúdame': 'help me', 'ayudar': 'to help',
+  'cree': 'believes', 'creo': 'I believe', 'crees': 'you believe',
+  'quiere': 'wants', 'quiero': 'I want', 'quieres': 'you want',
+  'puede': 'can', 'puedo': 'I can', 'puedes': 'you can',
+  'ven': 'come', 'venga': 'come', 'vamos': 'let\'s go', 'vete': 'go away',
+  'mire': 'look', 'mira': 'look', 'escuche': 'listen', 'cuidado': 'careful',
+  'salir': 'to leave', 'salió': 'he/she left', 'huyó': 'he/she fled',
+  'mató': 'killed', 'matar': 'to kill', 'murió': 'died', 'morir': 'to die',
+  // connectors
+  'pero': 'but', 'porque': 'because', 'cuando': 'when', 'donde': 'where', 'que': 'that/what',
+  'con': 'with', 'sin': 'without', 'para': 'for/to', 'de': 'of/from', 'en': 'in/on',
+  'mi': 'my', 'su': 'his/her/their', 'tu': 'your', 'mío': 'mine', 'suyo': 'his/hers',
+  'me': 'me', 'te': 'you', 'lo': 'it/him', 'la': 'it/her', 'le': 'to him/her',
+  'aquí': 'here', 'allí': 'there', 'todo': 'all', 'nada': 'nothing', 'algo': 'something',
+  'algo': 'something', 'alguien': 'someone', 'nadie': 'no one',
+  'muy': 'very', 'también': 'also', 'sólo': 'only', 'ya': 'already', 'todavía': 'still',
+  'bien': 'well', 'mal': 'badly', 'mejor': 'better', 'peor': 'worse',
+  // names (not translated)
+  'Elena': '(name) Elena', 'San Esteban': 'San Esteban', 'Mateo': '(name) Mateo',
+  'Carmen': '(name) Carmen', 'Diego': '(name) Diego', 'Padre Joaquín': '(name) Father Joaquín',
+  'Tomás': '(name) Tomás', 'Isabel': '(name) Isabel',
+  // emotional / colors / more
+  'frío': 'cold', 'calor': 'heat', 'lluvia': 'rain', 'viento': 'wind',
+  'oscuro': 'dark', 'luz': 'light', 'rojo': 'red', 'negro': 'black', 'blanco': 'white',
+  'flores': 'flowers', 'agua': 'water', 'vino': 'wine', 'pan': 'bread',
+  'corazón': 'heart', 'alma': 'soul', 'dios': 'god', 'amor': 'love',
+  'pobre': 'poor', 'rica': 'rich', 'feliz': 'happy', 'triste': 'sad',
+  'loca': 'crazy', 'sola': 'alone', 'juntos': 'together',
+  'esta': 'this', 'este': 'this', 'eso': 'that', 'esa': 'that',
+  'una': 'a/one', 'un': 'a/one', 'el': 'the', 'los': 'the', 'las': 'the',
+  'y': 'and', 'o': 'or', 'a': 'to/at',
+  'él': 'he', 'ella': 'she', 'yo': 'I', 'nosotros': 'we', 'ellos': 'they',
+  'él': 'he', 'qué': 'what', 'quién': 'who', 'cómo': 'how', 'cuándo': 'when',
+  'usted': 'you (formal)', 'cómo': 'how',
+  // verbs phase 2
+  'pasó': 'happened', 'pasa': 'happens', 'pasó algo': 'something happened',
+  'esperando': 'waiting', 'esperar': 'to wait', 'espera': 'wait',
+  'me voy': 'I am leaving', 'irse': 'to leave', 'venir': 'to come',
+  'odiaba': 'hated', 'amaba': 'loved', 'quería': 'wanted/loved',
+  'gritó': 'shouted', 'lloró': 'cried', 'corrió': 'ran',
+  'encontró': 'found', 'encontraron': 'they found', 'perdido': 'lost',
+  'olvidar': 'to forget', 'olvidé': 'I forgot', 'recordar': 'to remember', 'recuerdo': 'I remember',
+  'callar': 'to be quiet', 'cállate': 'shut up', 'silencio': 'silence',
+  'demonio': 'demon/devil', 'pecado': 'sin', 'confesión': 'confession',
+  'celos': 'jealousy', 'mentiroso': 'liar', 'borracho': 'drunk',
+  'ladrón': 'thief', 'huerto': 'orchard/garden', 'campo': 'field',
+  'cuerda': 'rope', 'cuchillo': 'knife', 'pistola': 'pistol', 'fuego': 'fire',
+  'enterrado': 'buried', 'tumba': 'grave', 'cementerio': 'cemetery',
+  'campana': 'bell', 'sonó': 'rang/sounded', 'gritó': 'screamed/shouted',
+  'esposas': 'handcuffs/wives', 'cárcel': 'jail', 'policía': 'police',
+  'embarazada': 'pregnant', 'bebé': 'baby', 'familia': 'family',
+  'dinero': 'money', 'oro': 'gold', 'pagar': 'to pay', 'compró': 'bought',
+  'libro': 'book', 'carta': 'letter', 'escribió': 'wrote', 'leer': 'to read',
+  'realmente': 'really', 'quizás': 'maybe', 'tal vez': 'maybe',
+  'desde': 'since', 'hasta': 'until', 'entre': 'between',
+  'rojas': 'red (pl.)', 'todos': 'everyone', 'todas': 'all (f.)',
+  'vieja': 'old (f.)', 'viejo': 'old (m.)', 'joven': 'young',
+  'hermosa': 'beautiful', 'bonita': 'pretty',
+  'mismo': 'same', 'otro': 'other', 'otra': 'other (f.)',
+  'cierto': 'true/certain', 'falso': 'false',
+};
+
+// =====================================================================
+// CHARACTERS
+// =====================================================================
+const CHARACTERS = {
+  mateo: {
+    name: 'Mateo el Tabernero',
+    desc: 'The tavern keeper. Heavy hands, watchful eyes. Knew Elena well.',
+    secret: 'Was in love with Elena. She rejected him.'
+  },
+  carmen: {
+    name: 'Carmen la Vecina',
+    desc: 'Elena\'s neighbor. Quick to talk, slow to commit to a story.',
+    secret: 'Saw who came to Elena\'s door that night but is afraid to say.'
+  },
+  diego: {
+    name: 'Diego el Esposo',
+    desc: 'Elena\'s husband. A farmer with a temper and a debt.',
+    secret: 'Owes money to dangerous men. Argued with Elena that night.'
+  },
+  padre: {
+    name: 'Padre Joaquín',
+    desc: 'The village priest. Heard everyone\'s confessions, including hers.',
+    secret: 'Bound by the seal of confession. Knows the killer.'
+  },
+  tomas: {
+    name: 'Tomás el Niño',
+    desc: 'A boy of eleven. Saw something he shouldn\'t have, by the river.',
+    secret: 'Witnessed the body being moved.'
+  },
+  isabel: {
+    name: 'Isabel la Hermana',
+    desc: 'Elena\'s younger sister. The only one who weeps openly.',
+    secret: 'Elena had told her she was leaving Diego. Was going to leave with someone else.'
+  }
+};
+
+// =====================================================================
+// SCENES — the story
+// =====================================================================
+const SCENES = [
+  // ============ SCENE 0: ARRIVAL ============
+  {
+    id: 'arrival',
+    day: 'DÍA UNO — TARDE',
+    location: 'San Esteban, Spain',
+    desc: 'The bus drops you in a square of white houses and dark shutters. A church bell tolls once. An old man on a bench watches you without expression. You\'ve come because Elena Vargas, an old friend from your university days, sent you a letter — and then vanished. The villagers do not speak English. Only Spanish will open their doors.',
+    dialogue: [
+      { speaker: 'Anciano', mood: '(suspicious, looking up)', es: 'Buenas tardes, forastero. ¿Qué busca aquí?' }
+    ],
+    choices: [
+      {
+        es: 'Busco a Elena Vargas.',
+        en: 'I am looking for Elena Vargas.',
+        next: 'arrival_elena',
+        learn: ['busco', 'Elena']
+      },
+      {
+        es: 'Soy amiga de Elena. Soy su amigo.',
+        en: 'I am Elena\'s friend.',
+        next: 'arrival_friend',
+        learn: ['soy', 'amiga', 'amigo']
+      },
+      {
+        es: 'No es asunto suyo, señor.',
+        en: 'It\'s not your business, sir.',
+        next: 'arrival_rude',
+        learn: ['no', 'señor'],
+        flag: { rudeStart: true }
+      }
+    ]
+  },
+
+  {
+    id: 'arrival_elena',
+    day: 'DÍA UNO — TARDE',
+    location: 'La Plaza',
+    desc: 'The old man\'s face folds. He looks past you, at the church.',
+    dialogue: [
+      { speaker: 'Anciano', mood: '(quietly)', es: 'Elena está desaparecida. Ya no está aquí.' },
+      { speaker: 'Anciano', mood: '(crossing himself)', es: 'Quizás está muerta. Quizás peor.' }
+    ],
+    addClue: { text: 'Elena is missing. The old man suggests she may be dead — or worse.', source: 'Old man in the plaza' },
+    addCharacter: 'anciano',
+    choices: [
+      {
+        es: '¿Quién la vio por última vez?',
+        en: 'Who saw her last?',
+        next: 'plaza_who',
+        learn: ['quién', 'vio']
+      },
+      {
+        es: '¿Dónde vivía Elena?',
+        en: 'Where did Elena live?',
+        next: 'plaza_where',
+        learn: ['dónde']
+      }
+    ]
+  },
+
+  {
+    id: 'arrival_friend',
+    day: 'DÍA UNO — TARDE',
+    location: 'La Plaza',
+    desc: 'Something softens in his eyes — and then hardens again.',
+    dialogue: [
+      { speaker: 'Anciano', mood: '(low voice)', es: 'Entonces tiene un problema, amiga mía. Elena ya no está.' },
+      { speaker: 'Anciano', es: 'Desapareció anoche. Nadie sabe nada. O nadie quiere decir nada.' }
+    ],
+    addClue: { text: 'Elena disappeared last night. Either no one knows, or no one will speak.', source: 'Old man in the plaza' },
+    choices: [
+      {
+        es: '¿Quién la vio por última vez?',
+        en: 'Who saw her last?',
+        next: 'plaza_who',
+        learn: ['quién', 'vio']
+      },
+      {
+        es: '¿Dónde vivía Elena?',
+        en: 'Where did Elena live?',
+        next: 'plaza_where',
+        learn: ['dónde']
+      }
+    ]
+  },
+
+  {
+    id: 'arrival_rude',
+    day: 'DÍA UNO — TARDE',
+    location: 'La Plaza',
+    desc: 'The old man\'s eyes go cold. He spits to the side and turns away.',
+    dialogue: [
+      { speaker: 'Anciano', mood: '(turning away)', es: 'Entonces vaya solo, forastero. Nadie le ayudará aquí.' }
+    ],
+    addClue: { text: 'You insulted the first villager you met. Word spreads fast in San Esteban.', source: 'Your own mistake' },
+    choices: [
+      {
+        es: 'Continuar...',
+        en: 'Continue...',
+        next: 'plaza_who'
+      }
+    ]
+  },
+
+  {
+    id: 'plaza_who',
+    day: 'DÍA UNO — TARDE',
+    location: 'La Plaza',
+    desc: 'The old man points down a narrow street toward a building with red shutters.',
+    dialogue: [
+      { speaker: 'Anciano', es: 'Mateo el tabernero. Ella estuvo en la taberna anoche.' },
+      { speaker: 'Anciano', mood: '(almost a warning)', es: 'Pero cuidado. Mateo bebe y miente. Las dos cosas, siempre.' }
+    ],
+    addClue: { text: 'Mateo the tavern keeper saw Elena last night. The old man warns: Mateo drinks and lies.', source: 'Old man in the plaza' },
+    choices: [
+      {
+        es: 'Ir a la taberna.',
+        en: 'Go to the tavern.',
+        next: 'tavern_enter',
+        learn: ['taberna']
+      }
+    ]
+  },
+
+  {
+    id: 'plaza_where',
+    day: 'DÍA UNO — TARDE',
+    location: 'La Plaza',
+    desc: 'The old man gestures vaguely up a steep lane.',
+    dialogue: [
+      { speaker: 'Anciano', es: 'La casa blanca con flores rojas. Allí vive con su esposo Diego.' },
+      { speaker: 'Anciano', mood: '(meaningfully)', es: 'Si todavía vive.' }
+    ],
+    addClue: { text: 'Elena lives in the white house with red flowers. Her husband is Diego.', source: 'Old man in the plaza' },
+    choices: [
+      {
+        es: 'Ir a la taberna primero.',
+        en: 'Go to the tavern first.',
+        next: 'tavern_enter',
+        learn: ['taberna']
+      },
+      {
+        es: 'Ir a la casa.',
+        en: 'Go to the house.',
+        next: 'house_diego',
+        learn: ['casa']
+      }
+    ]
+  },
+
+  // ============ TAVERN — MATEO ============
+  {
+    id: 'tavern_enter',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'The tavern is dim. A heavy man behind the bar polishes a glass with a stained rag. Two old men play cards in the corner and do not look up. The smell is wine and woodsmoke.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(without looking up)', es: 'Siéntese. ¿Vino o cerveza?' }
+    ],
+    addCharacter: 'mateo',
+    choices: [
+      {
+        es: 'No quiero beber. Quiero hablar de Elena.',
+        en: 'I don\'t want a drink. I want to talk about Elena.',
+        next: 'mateo_direct',
+        learn: ['quiero', 'hablar']
+      },
+      {
+        es: 'Vino, por favor.',
+        en: 'Wine, please.',
+        next: 'mateo_wine',
+        learn: ['vino', 'por', 'favor'],
+        flag: { drankWithMateo: true }
+      }
+    ]
+  },
+
+  {
+    id: 'mateo_direct',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'Mateo\'s hand stops mid-polish. He sets the glass down carefully.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(cold)', es: 'Elena no me importa. Y a usted tampoco debería importarle.' },
+      { speaker: 'Mateo', es: 'Ella se fue. Eso es todo.' }
+    ],
+    addClue: { text: 'Mateo refused to speak directly about Elena. He claimed she "just left."', source: 'Mateo the tavern keeper' },
+    choices: [
+      {
+        es: 'Usted la amaba, ¿verdad?',
+        en: 'You loved her, didn\'t you?',
+        next: 'mateo_accused',
+        learn: ['usted', 'amaba', 'verdad']
+      },
+      {
+        es: 'Está bien. Adiós.',
+        en: 'Fine. Goodbye.',
+        next: 'tavern_exit_early',
+        learn: ['adiós']
+      }
+    ]
+  },
+
+  {
+    id: 'mateo_wine',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'Mateo pours, watches you drink, then pours himself one. His shoulders ease a fraction.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(quieter now)', es: 'Usted es el forastero. El amigo de Elena, ¿no?' },
+      { speaker: 'Mateo', es: 'Sí, ella estuvo aquí anoche. Estaba esperando a alguien. No bebió nada.' }
+    ],
+    addClue: { text: 'Elena was at the tavern last night, waiting for someone. She did not drink.', source: 'Mateo the tavern keeper' },
+    choices: [
+      {
+        es: '¿A quién esperaba?',
+        en: 'Who was she waiting for?',
+        next: 'mateo_waiting',
+        learn: ['quién', 'esperaba']
+      },
+      {
+        es: 'Usted la amaba, ¿verdad?',
+        en: 'You loved her, didn\'t you?',
+        next: 'mateo_accused',
+        learn: ['amaba']
+      }
+    ]
+  },
+
+  {
+    id: 'mateo_accused',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'Mateo\'s knuckles whiten on the bar. For a moment you think he will hit you.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(quiet rage)', es: 'Cállate. No sabes nada. Nada.' },
+      { speaker: 'Mateo', mood: '(after a long pause)', es: 'Sí. La amaba. Y ella amaba a otro. No a mí. No a Diego. A otro.' }
+    ],
+    addClue: { text: 'Mateo loved Elena. He claims she loved someone else — not him, not Diego, but a third man.', source: 'Mateo the tavern keeper' },
+    setTrust: { mateo: -1 },
+    choices: [
+      {
+        es: '¿Quién es ese otro?',
+        en: 'Who is this other man?',
+        next: 'mateo_other'
+      },
+      {
+        es: 'Lo siento. Me voy.',
+        en: 'I\'m sorry. I\'m leaving.',
+        next: 'tavern_exit_late',
+        learn: ['me voy']
+      }
+    ]
+  },
+
+  {
+    id: 'mateo_waiting',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'Mateo looks at his own glass.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(bitter)', es: 'No a mí. No a su esposo. A otro. Ella siempre amaba a otro.' }
+    ],
+    addClue: { text: 'Elena was waiting for someone — not Mateo, not her husband Diego.', source: 'Mateo the tavern keeper' },
+    choices: [
+      {
+        es: '¿Quién es ese otro?',
+        en: 'Who is this other man?',
+        next: 'mateo_other'
+      }
+    ]
+  },
+
+  {
+    id: 'mateo_other',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'Mateo refills his glass and drinks it in one swallow.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(half-laughing, half-furious)', es: 'Pregunte al Padre Joaquín. Él sabe todos los secretos del pueblo.' },
+      { speaker: 'Mateo', mood: '(darkly)', es: 'Y algunos secretos no son suyos.' }
+    ],
+    addClue: { text: 'Mateo suggests Padre Joaquín knows the village\'s secrets — perhaps including who Elena was meeting.', source: 'Mateo the tavern keeper' },
+    choices: [
+      {
+        es: 'Continuar...',
+        en: 'Continue...',
+        next: 'tavern_exit'
+      }
+    ]
+  },
+
+  {
+    id: 'tavern_exit_early',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'You leave without learning much. Mateo watches you go, his face unreadable.',
+    setTrust: { mateo: -1 },
+    choices: [
+      { es: 'Ir a la casa de Elena.', en: 'Go to Elena\'s house.', next: 'house_diego', learn: ['casa'] }
+    ]
+  },
+
+  {
+    id: 'tavern_exit_late',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'As you leave, Mateo says one more thing — barely above a whisper.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(whispered)', es: 'El niño Tomás vio algo en el río. Pregúntele.' }
+    ],
+    addClue: { text: 'A boy named Tomás saw something at the river.', source: 'Mateo the tavern keeper' },
+    choices: [
+      { es: 'Ir a la casa de Elena.', en: 'Go to Elena\'s house.', next: 'house_diego', learn: ['casa'] }
+    ]
+  },
+
+  {
+    id: 'tavern_exit',
+    day: 'DÍA UNO — NOCHE',
+    location: 'La Taberna',
+    desc: 'As you leave, Mateo says one more thing.',
+    dialogue: [
+      { speaker: 'Mateo', mood: '(low)', es: 'El niño Tomás vio algo en el río. Anoche. Pregúntele si quiere la verdad.' }
+    ],
+    addClue: { text: 'A boy named Tomás saw something at the river last night.', source: 'Mateo the tavern keeper' },
+    setTrust: { mateo: 1 },
+    choices: [
+      { es: 'Ir a la casa de Elena.', en: 'Go to Elena\'s house.', next: 'house_diego', learn: ['casa'] }
+    ]
+  },
+
+  // ============ DIEGO — THE HUSBAND ============
+  {
+    id: 'house_diego',
+    day: 'DÍA DOS — MAÑANA',
+    location: 'Casa de Elena',
+    desc: 'The white house. The red flowers in the window box look wilted. You knock. After a long moment, a man with a swollen face opens the door — he has been crying, or drinking, or both.',
+    dialogue: [
+      { speaker: 'Diego', mood: '(hoarse)', es: '¿Quién es usted? ¿Qué quiere?' }
+    ],
+    addCharacter: 'diego',
+    choices: [
+      {
+        es: 'Soy amigo de Elena. ¿Puedo entrar?',
+        en: 'I am Elena\'s friend. May I come in?',
+        next: 'diego_enter',
+        learn: ['puedo']
+      },
+      {
+        es: '¿Qué le pasó a su esposa?',
+        en: 'What happened to your wife?',
+        next: 'diego_confront',
+        learn: ['pasó', 'esposa']
+      }
+    ]
+  },
+
+  {
+    id: 'diego_enter',
+    day: 'DÍA DOS — MAÑANA',
+    location: 'Casa de Elena',
+    desc: 'The kitchen smells of last night\'s wine. Two cups on the table. Diego sees you notice and turns the second cup away.',
+    dialogue: [
+      { speaker: 'Diego', mood: '(deflating)', es: 'Yo no la maté. Lo juro. La amaba. Pero anoche... anoche peleamos.' },
+      { speaker: 'Diego', es: 'Ella dijo que se iba. Con otro hombre. No me dijo quién.' }
+    ],
+    addClue: { text: 'Diego admits he and Elena fought the night she disappeared. She said she was leaving him for another man. Two cups on the table — someone else was here.', source: 'Diego, Elena\'s husband' },
+    choices: [
+      {
+        es: '¿Quién estuvo aquí anoche? Veo dos copas.',
+        en: 'Who was here last night? I see two cups.',
+        next: 'diego_cups'
+      },
+      {
+        es: '¿Usted le hizo daño?',
+        en: 'Did you hurt her?',
+        next: 'diego_hurt',
+        learn: ['daño']
+      }
+    ]
+  },
+
+  {
+    id: 'diego_confront',
+    day: 'DÍA DOS — MAÑANA',
+    location: 'Casa de Elena',
+    desc: 'Diego\'s eyes flash. He grips the doorframe.',
+    dialogue: [
+      { speaker: 'Diego', mood: '(furious)', es: '¡Yo no le hice nada! ¡Nada!' },
+      { speaker: 'Diego', mood: '(quieter)', es: 'Pero sí, peleamos. Anoche. Ella se fue gritando. No la volví a ver.' }
+    ],
+    addClue: { text: 'Diego and Elena fought the night she disappeared. She left shouting. He claims he did not see her again.', source: 'Diego, Elena\'s husband' },
+    choices: [
+      {
+        es: '¿Puedo entrar? Necesito ver más.',
+        en: 'May I come in? I need to see more.',
+        next: 'diego_enter',
+        learn: ['necesito']
+      }
+    ]
+  },
+
+  {
+    id: 'diego_cups',
+    day: 'DÍA DOS — MAÑANA',
+    location: 'Casa de Elena',
+    desc: 'Diego goes very still.',
+    dialogue: [
+      { speaker: 'Diego', mood: '(after a pause)', es: 'Un hombre vino. Después de la pelea. Un hombre... importante en este pueblo.' },
+      { speaker: 'Diego', mood: '(refusing to say more)', es: 'No puedo decir más. Tengo familia. Tengo miedo.' }
+    ],
+    addClue: { text: 'After Elena left, an "important man" in the village came to Diego\'s house. Diego is afraid to name him.', source: 'Diego, Elena\'s husband' },
+    setTrust: { diego: 1 },
+    choices: [
+      {
+        es: 'Yo le protegeré. Dígame el nombre.',
+        en: 'I will protect you. Tell me the name.',
+        next: 'diego_name_pressure'
+      },
+      {
+        es: 'Está bien. Buscaré la verdad por otro camino.',
+        en: 'Okay. I\'ll find the truth another way.',
+        next: 'diego_leave_kind',
+        learn: ['camino']
+      }
+    ]
+  },
+
+  {
+    id: 'diego_name_pressure',
+    day: 'DÍA DOS — MAÑANA',
+    location: 'Casa de Elena',
+    desc: 'Diego laughs without humor.',
+    dialogue: [
+      { speaker: 'Diego', mood: '(bitter)', es: '¿Usted? ¿Un forastero? Usted no puede protegerme.' },
+      { speaker: 'Diego', es: 'Vaya. Y no vuelva.' }
+    ],
+    setTrust: { diego: -2 },
+    addClue: { text: 'You pushed Diego too hard. He shut the door on you.', source: 'Your interrogation tactic' },
+    choices: [
+      { es: 'Continuar...', en: 'Continue...', next: 'church_path' }
+    ]
+  },
+
+  {
+    id: 'diego_leave_kind',
+    day: 'DÍA DOS — MAÑANA',
+    location: 'Casa de Elena',
+    desc: 'Diego nods slowly. As you turn to leave he speaks once more, almost too quiet to hear.',
+    dialogue: [
+      { speaker: 'Diego', mood: '(whispered)', es: 'Pregunte a Carmen. La vecina. Ella vio quién vino a la puerta.' }
+    ],
+    addClue: { text: 'Diego suggests his neighbor Carmen saw who came to Elena\'s door.', source: 'Diego, Elena\'s husband' },
+    setTrust: { diego: 2 },
+    choices: [
+      { es: 'Ir a hablar con Carmen.', en: 'Go talk to Carmen.', next: 'carmen_meet', learn: ['hablar'] }
+    ]
+  },
+
+  {
+    id: 'diego_hurt',
+    day: 'DÍA DOS — MAÑANA',
+    location: 'Casa de Elena',
+    desc: 'Diego sinks into a chair. His shoulders shake. For a moment he can\'t speak.',
+    dialogue: [
+      { speaker: 'Diego', mood: '(broken)', es: 'La empujé. Sólo la empujé. Ella se golpeó la cabeza contra la mesa.' },
+      { speaker: 'Diego', es: 'Pero estaba viva cuando salió. Lo juro por Dios. Estaba viva.' }
+    ],
+    addClue: { text: 'Diego admits he pushed Elena and she hit her head on the table. He swears she was alive when she left the house.', source: 'Diego, Elena\'s husband' },
+    setTrust: { diego: 1 },
+    choices: [
+      {
+        es: '¿Quién más estuvo aquí?',
+        en: 'Who else was here?',
+        next: 'diego_cups'
+      }
+    ]
+  },
+
+  // ============ CARMEN — THE NEIGHBOR ============
+  {
+    id: 'carmen_meet',
+    day: 'DÍA DOS — TARDE',
+    location: 'Casa de Carmen',
+    desc: 'Carmen opens the door before you knock. She has been watching from the window. She is perhaps sixty, small and sharp-eyed, with hands always moving.',
+    dialogue: [
+      { speaker: 'Carmen', mood: '(quickly, quietly)', es: 'Entre. Rápido. No quiero que la gente vea.' }
+    ],
+    addCharacter: 'carmen',
+    choices: [
+      {
+        es: '¿Por qué tiene miedo?',
+        en: 'Why are you afraid?',
+        next: 'carmen_fear',
+        learn: ['por qué', 'miedo']
+      }
+    ]
+  },
+
+  {
+    id: 'carmen_fear',
+    day: 'DÍA DOS — TARDE',
+    location: 'Casa de Carmen',
+    desc: 'Carmen sits you at a small kitchen table. She pours tea with hands that tremble.',
+    dialogue: [
+      { speaker: 'Carmen', mood: '(low)', es: 'Vi al hombre que vino a la casa de Elena. Pero no puedo decir su nombre.' },
+      { speaker: 'Carmen', es: 'Si lo digo, mi familia sufrirá. Usted no entiende este pueblo.' }
+    ],
+    addClue: { text: 'Carmen saw the man who came to Elena\'s house but is too afraid to name him directly.', source: 'Carmen the neighbor' },
+    choices: [
+      {
+        es: 'No tiene que decir el nombre. Descríbalo.',
+        en: 'You don\'t have to say the name. Describe him.',
+        next: 'carmen_describe'
+      },
+      {
+        es: '¿Era el Padre Joaquín?',
+        en: 'Was it Padre Joaquín?',
+        next: 'carmen_priest',
+        requires: 'mateo_other'
+      }
+    ]
+  },
+
+  {
+    id: 'carmen_describe',
+    day: 'DÍA DOS — TARDE',
+    location: 'Casa de Carmen',
+    desc: 'Carmen looks at you for a long moment, deciding.',
+    dialogue: [
+      { speaker: 'Carmen', mood: '(carefully)', es: 'Un hombre alto. Vestido de negro. Llegó muy tarde. Y se fue corriendo con algo en los brazos.' },
+      { speaker: 'Carmen', mood: '(meeting your eyes)', es: 'Algo grande. Algo... pesado.' }
+    ],
+    addClue: { text: 'A tall man in black came to Elena\'s house very late and ran away carrying something large and heavy in his arms.', source: 'Carmen the neighbor' },
+    setTrust: { carmen: 2 },
+    choices: [
+      {
+        es: '¿Hacia dónde fue?',
+        en: 'Where did he go?',
+        next: 'carmen_direction'
+      }
+    ]
+  },
+
+  {
+    id: 'carmen_priest',
+    day: 'DÍA DOS — TARDE',
+    location: 'Casa de Carmen',
+    desc: 'Carmen freezes. Her cup stops halfway to her lips.',
+    dialogue: [
+      { speaker: 'Carmen', mood: '(barely audible)', es: 'Usted ya sabe. Entonces no me obligue a decirlo.' },
+      { speaker: 'Carmen', es: 'Sí. Era él. Vestido de negro. Se llevó algo... algo en los brazos. Hacia el río.' }
+    ],
+    addClue: { text: 'Carmen confirms it was Padre Joaquín. He left Elena\'s house carrying something toward the river.', source: 'Carmen the neighbor', major: true },
+    setTrust: { carmen: 2 },
+    choices: [
+      {
+        es: 'Continuar...',
+        en: 'Continue...',
+        next: 'river_decision'
+      }
+    ]
+  },
+
+  {
+    id: 'carmen_direction',
+    day: 'DÍA DOS — TARDE',
+    location: 'Casa de Carmen',
+    desc: 'Carmen looks past you, out the window, toward the trees.',
+    dialogue: [
+      { speaker: 'Carmen', es: 'Hacia el río. Hacia el bosque. Donde nadie va de noche.' }
+    ],
+    addClue: { text: 'The man in black went toward the river and forest — where no one goes at night.', source: 'Carmen the neighbor' },
+    choices: [
+      {
+        es: 'Continuar...',
+        en: 'Continue...',
+        next: 'river_decision'
+      }
+    ]
+  },
+
+  // ============ DECISION POINT — RIVER OR CHURCH ============
+  {
+    id: 'church_path',
+    day: 'DÍA DOS — TARDE',
+    location: 'Camino a la iglesia',
+    desc: 'You walk uphill toward the church. The bell tolls. Where now?',
+    choices: [
+      { es: 'Buscar a Carmen, la vecina.', en: 'Find Carmen the neighbor.', next: 'carmen_meet' },
+      { es: 'Ir directo al Padre Joaquín.', en: 'Go directly to Padre Joaquín.', next: 'church_enter' }
+    ]
+  },
+
+  {
+    id: 'river_decision',
+    day: 'DÍA DOS — TARDE',
+    location: 'Calle del Pueblo',
+    desc: 'You step out of Carmen\'s house. The sun is sinking. Two paths: go to the river where the man in black went, or confront the priest now.',
+    choices: [
+      {
+        es: 'Buscar al niño Tomás en el río.',
+        en: 'Look for the boy Tomás at the river.',
+        next: 'river_tomas',
+        learn: ['niño', 'río']
+      },
+      {
+        es: 'Ir a la iglesia. Confrontar al Padre.',
+        en: 'Go to the church. Confront the Padre.',
+        next: 'church_enter'
+      }
+    ]
+  },
+
+  // ============ TOMÁS — THE BOY ============
+  {
+    id: 'river_tomas',
+    day: 'DÍA DOS — ATARDECER',
+    location: 'El Río',
+    desc: 'The river runs fast and cold. A boy crouches on the bank, throwing stones into the water. He flinches when he sees you.',
+    dialogue: [
+      { speaker: 'Tomás', mood: '(scared)', es: '¿Es usted policía? Yo no vi nada. No vi nada anoche.' }
+    ],
+    addCharacter: 'tomas',
+    choices: [
+      {
+        es: 'No soy policía. Soy amigo de Elena.',
+        en: 'I am not police. I am Elena\'s friend.',
+        next: 'tomas_calm',
+        learn: ['policía']
+      },
+      {
+        es: 'Dime qué viste o se lo digo a tu madre.',
+        en: 'Tell me what you saw or I\'ll tell your mother.',
+        next: 'tomas_threat',
+        learn: ['madre']
+      }
+    ]
+  },
+
+  {
+    id: 'tomas_calm',
+    day: 'DÍA DOS — ATARDECER',
+    location: 'El Río',
+    desc: 'The boy\'s shoulders drop. He sits down on the bank and looks at the water.',
+    dialogue: [
+      { speaker: 'Tomás', mood: '(quietly)', es: 'Estaba pescando tarde. Vi a un hombre. Vestido de negro. Llevaba algo grande envuelto en una manta.' },
+      { speaker: 'Tomás', es: 'Lo puso en el agua. En el río. Y se fue corriendo a la iglesia.' }
+    ],
+    addClue: { text: 'Tomás saw a man in black put a large bundle wrapped in a blanket into the river. The man then ran to the church.', source: 'Tomás the boy', major: true },
+    setTrust: { tomas: 2 },
+    choices: [
+      {
+        es: '¿Viste su cara?',
+        en: 'Did you see his face?',
+        next: 'tomas_face'
+      }
+    ]
+  },
+
+  {
+    id: 'tomas_threat',
+    day: 'DÍA DOS — ATARDECER',
+    location: 'El Río',
+    desc: 'The boy goes pale and runs. By the time you catch up he is at his mother\'s door, screaming. You will not get more from him.',
+    setTrust: { tomas: -3 },
+    addClue: { text: 'You frightened the boy. He fled. You will not learn what he saw from him directly.', source: 'Your mistake' },
+    choices: [
+      { es: 'Continuar a la iglesia.', en: 'Continue to the church.', next: 'church_enter' }
+    ]
+  },
+
+  {
+    id: 'tomas_face',
+    day: 'DÍA DOS — ATARDECER',
+    location: 'El Río',
+    desc: 'Tomás hesitates. Then he nods, slowly.',
+    dialogue: [
+      { speaker: 'Tomás', mood: '(whispered)', es: 'Era el Padre Joaquín. Vi su cara cuando se volvió.' },
+      { speaker: 'Tomás', mood: '(crying now)', es: 'Pero el Padre Joaquín no puede ser malo. ¿Verdad? Él me da la comunión los domingos.' }
+    ],
+    addClue: { text: 'Tomás confirms the man in black was Padre Joaquín. The boy is shaken — the priest gives him communion on Sundays.', source: 'Tomás the boy', major: true },
+    choices: [
+      { es: 'Ir a la iglesia. Ahora.', en: 'Go to the church. Now.', next: 'church_enter' }
+    ]
+  },
+
+  // ============ ISABEL — THE SISTER (optional, deepens story) ============
+  {
+    id: 'isabel_meet',
+    day: 'DÍA DOS — NOCHE',
+    location: 'Casa de Isabel',
+    desc: 'Elena\'s sister opens the door with red eyes. She is younger than Elena, perhaps thirty, and you can see Elena\'s face in hers.',
+    dialogue: [
+      { speaker: 'Isabel', mood: '(through tears)', es: '¿Usted es el amigo del que ella escribía? Ella decía que vendría. Pero ya es demasiado tarde.' }
+    ],
+    addCharacter: 'isabel',
+    choices: [
+      {
+        es: 'Cuénteme todo. Por favor.',
+        en: 'Tell me everything. Please.',
+        next: 'isabel_tells',
+        learn: ['cuénteme']
+      }
+    ]
+  },
+
+  {
+    id: 'isabel_tells',
+    day: 'DÍA DOS — NOCHE',
+    location: 'Casa de Isabel',
+    desc: 'Isabel pours you both a small glass of wine. Her hands are steady but her voice is not.',
+    dialogue: [
+      { speaker: 'Isabel', es: 'Elena estaba embarazada. Tres meses. Y el bebé no era de Diego.' },
+      { speaker: 'Isabel', mood: '(meeting your eyes)', es: 'Era del Padre Joaquín. Ella se lo dijo anoche. Iba a dejar a Diego, dejar el pueblo, y empezar una vida nueva.' },
+      { speaker: 'Isabel', mood: '(softly)', es: 'Pero el Padre no podía permitirlo. Su carrera. Su iglesia. Su Dios.' }
+    ],
+    addClue: { text: 'Elena was pregnant — three months. The child was Padre Joaquín\'s, not Diego\'s. She told the priest the night she disappeared. She planned to leave the village and start a new life.', source: 'Isabel, Elena\'s sister', major: true },
+    setTrust: { isabel: 3 },
+    choices: [
+      {
+        es: 'Tengo que ir a la iglesia.',
+        en: 'I have to go to the church.',
+        next: 'church_enter'
+      }
+    ]
+  },
+
+  // ============ THE CHURCH — PADRE JOAQUÍN ============
+  {
+    id: 'church_enter',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'The church is empty except for candles and a man kneeling at the altar. When you enter he does not turn. He keeps praying. After a long moment he speaks without rising.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', mood: '(calm, soft)', es: 'Sabía que vendría. Elena dijo que vendría un amigo de lejos. Siéntese.' }
+    ],
+    addCharacter: 'padre',
+    // The available choices depend on what you've learned
+    choices: [
+      {
+        es: 'Yo sé lo que hizo, Padre.',
+        en: 'I know what you did, Father.',
+        next: 'padre_accuse',
+        requires: ['carmen_priest', 'tomas_face', 'isabel_tells']
+      },
+      {
+        es: 'Cuénteme la verdad sobre Elena.',
+        en: 'Tell me the truth about Elena.',
+        next: 'padre_general'
+      },
+      {
+        es: 'Una vecina dice que usted estuvo en su casa.',
+        en: 'A neighbor says you were at her house.',
+        next: 'padre_carmen_evidence',
+        requires: 'carmen_describe'
+      }
+    ]
+  },
+
+  {
+    id: 'padre_general',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'The priest finally rises and turns. His face is gentle, lined, exhausted. He looks like a man who has not slept.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', es: 'Elena era un alma noble. Demasiado noble para este pueblo, para su esposo, para mí.' },
+      { speaker: 'Padre Joaquín', es: 'Ella se fue anoche. Eso es todo lo que puedo decirle.' }
+    ],
+    addClue: { text: 'The priest claims Elena simply "left" last night and refuses to say more.', source: 'Padre Joaquín' },
+    choices: [
+      {
+        es: '¿Por qué cargó usted algo al río anoche?',
+        en: 'Why did you carry something to the river last night?',
+        next: 'padre_river',
+        requires: 'tomas_face'
+      },
+      {
+        es: '¿Estaba embarazada?',
+        en: 'Was she pregnant?',
+        next: 'padre_pregnant',
+        requires: 'isabel_tells'
+      },
+      {
+        es: 'Está mintiendo, Padre.',
+        en: 'You are lying, Father.',
+        next: 'padre_lying'
+      }
+    ]
+  },
+
+  {
+    id: 'padre_carmen_evidence',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'The priest closes his eyes.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', es: 'Sí. Estuve en su casa. Vino a buscarme. Estaba herida — Diego la había empujado.' },
+      { speaker: 'Padre Joaquín', es: 'Yo la ayudé. Como sacerdote. Nada más.' }
+    ],
+    addClue: { text: 'The priest admits he was at Elena\'s house — claims he was there to help her after Diego pushed her.', source: 'Padre Joaquín' },
+    choices: [
+      {
+        es: '¿Por qué la llevó al río?',
+        en: 'Why did you carry her to the river?',
+        next: 'padre_river',
+        requires: 'tomas_face'
+      },
+      {
+        es: '¿Y nada más?',
+        en: 'And nothing more?',
+        next: 'padre_pregnant',
+        requires: 'isabel_tells'
+      }
+    ]
+  },
+
+  {
+    id: 'padre_river',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'The candles flicker. For the first time the priest\'s composure cracks.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', mood: '(whispered)', es: 'Estaba muerta cuando la cargué. Lo juro por Dios.' },
+      { speaker: 'Padre Joaquín', mood: '(gripping the altar)', es: 'Diego la mató. Yo sólo... yo escondí el cuerpo. Por miedo. Por miedo a perderlo todo.' }
+    ],
+    addClue: { text: 'The priest admits he hid Elena\'s body in the river, but insists Diego killed her — and that he hid the body out of fear.', source: 'Padre Joaquín', major: true },
+    choices: [
+      {
+        es: '¿Por qué creerle?',
+        en: 'Why should I believe you?',
+        next: 'padre_pregnant',
+        requires: 'isabel_tells'
+      },
+      {
+        es: '¿Por miedo de qué, Padre?',
+        en: 'Fear of what, Father?',
+        next: 'padre_finalconfession'
+      }
+    ]
+  },
+
+  {
+    id: 'padre_pregnant',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'The priest covers his face with his hands. For a long time he does not speak.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', mood: '(broken)', es: 'Sí. El hijo era mío. Ella me amaba. Y yo... que Dios me perdone... yo también la amaba.' },
+      { speaker: 'Padre Joaquín', es: 'Pero ella quería que dejara la iglesia. Que dejara todo. Y yo no pude. No tuve el valor.' }
+    ],
+    addClue: { text: 'Padre Joaquín confesses he loved Elena and the child was his. He could not bring himself to leave the church for her.', source: 'Padre Joaquín', major: true },
+    choices: [
+      {
+        es: '¿La mató usted?',
+        en: 'Did you kill her?',
+        next: 'padre_finalconfession'
+      }
+    ]
+  },
+
+  {
+    id: 'padre_lying',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'The priest looks at you steadily.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', es: 'Quizás. Todos los hombres mentimos. Pero usted no tiene pruebas, ¿verdad?' }
+    ],
+    choices: [
+      {
+        es: 'Voy a buscar las pruebas.',
+        en: 'I will find the proof.',
+        next: 'investigate_more'
+      }
+    ]
+  },
+
+  {
+    id: 'investigate_more',
+    day: 'DÍA DOS — NOCHE',
+    location: 'Camino del Pueblo',
+    desc: 'You leave the church. You still need more. Where now?',
+    choices: [
+      { es: 'Buscar al niño Tomás en el río.', en: 'Find Tomás at the river.', next: 'river_tomas', condition: '!tomas_face' },
+      { es: 'Buscar a la hermana Isabel.', en: 'Find Isabel, Elena\'s sister.', next: 'isabel_meet', condition: '!isabel_tells' },
+      { es: 'Volver y confrontar al Padre.', en: 'Return and confront the Padre.', next: 'church_enter' }
+    ]
+  },
+
+  {
+    id: 'padre_accuse',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'You lay out what you know: the body, the river, the child, the love. The priest does not move for a long time. Then he sinks slowly to his knees.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', mood: '(weeping)', es: 'Sí. Todo es verdad. Yo la maté.' },
+      { speaker: 'Padre Joaquín', es: 'Ella me dijo que se iba. Con el niño. Que todo el pueblo lo sabría. Que yo perdería todo.' },
+      { speaker: 'Padre Joaquín', mood: '(looking up)', es: 'La empujé. Cayó. Golpeó la piedra del altar. Yo no quise. Yo la amaba. Pero la maté.' }
+    ],
+    addClue: { text: 'Padre Joaquín confesses to killing Elena. He pushed her in the church. She struck the altar stone. He insists he did not intend it.', source: 'Padre Joaquín\'s confession', major: true },
+    choices: [
+      { es: 'Continuar...', en: 'Continue...', next: 'final_choice' }
+    ]
+  },
+
+  {
+    id: 'padre_finalconfession',
+    day: 'DÍA DOS — NOCHE',
+    location: 'La Iglesia',
+    desc: 'The priest sinks slowly to his knees before the altar.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', mood: '(weeping)', es: 'Sí. Yo la maté. La empujé y cayó contra la piedra. Yo no quise. Pero la maté.' }
+    ],
+    addClue: { text: 'Padre Joaquín confesses to killing Elena — pushing her so she struck a stone, though he claims it was unintentional.', source: 'Padre Joaquín\'s confession', major: true },
+    choices: [
+      { es: 'Continuar...', en: 'Continue...', next: 'final_choice' }
+    ]
+  },
+
+  // ============ FINAL CHOICE ============
+  {
+    id: 'final_choice',
+    day: 'DÍA DOS — MEDIANOCHE',
+    location: 'La Iglesia',
+    desc: 'The priest kneels before you. The candles burn low. Outside, the village sleeps. The decision is yours.',
+    dialogue: [
+      { speaker: 'Padre Joaquín', mood: '(quietly)', es: '¿Qué va a hacer, amigo? ¿Llamar a la policía? ¿Decir al pueblo?' },
+      { speaker: 'Padre Joaquín', es: 'O dejarme con mi pecado. Yo me iré. Lejos. Para siempre.' }
+    ],
+    choices: [
+      {
+        es: 'Voy a llamar a la policía. Es la justicia.',
+        en: 'I will call the police. This is justice.',
+        next: 'ending_justice',
+        learn: ['policía']
+      },
+      {
+        es: 'Cuente la verdad al pueblo. Ellos decidirán.',
+        en: 'Tell the truth to the village. They will decide.',
+        next: 'ending_village'
+      },
+      {
+        es: 'Vaya. Que su conciencia sea su castigo.',
+        en: 'Go. Let your conscience be your punishment.',
+        next: 'ending_mercy',
+        learn: ['conciencia']
+      },
+      {
+        es: 'Mate a este hombre. Por Elena.',
+        en: 'Kill this man. For Elena.',
+        next: 'ending_vengeance',
+        learn: ['mate']
+      }
+    ]
+  },
+
+  // ============ ENDINGS ============
+  {
+    id: 'ending_justice',
+    isEnding: true,
+    title: 'JUSTICIA',
+    text: 'The police come at dawn. Padre Joaquín does not resist. Diego is also taken — for the push that started it all. Isabel weeps in your arms. The village is shaken; some hate you for what you exposed, others thank you in whispers. Elena\'s body is found in the river and buried beside her parents. You leave on the morning bus, not as a hero — but as the foreigner who refused to let the truth stay buried.',
+    epilogue: 'Justice came. But San Esteban will not soon forgive the messenger.'
+  },
+
+  {
+    id: 'ending_village',
+    isEnding: true,
+    title: 'EL PUEBLO',
+    text: 'You ring the church bell at midnight until every villager comes. By candlelight you tell them everything. The crowd is silent — and then a roar. Some weep. Some shout. Old Diego falls to his knees. Padre Joaquín is led from the church not by police but by the village itself, to be judged by them. You do not stay to see what they decide. Some justice is best left to the people who must live with it.',
+    epilogue: 'You gave the village its truth. What they did with it was theirs.'
+  },
+
+  {
+    id: 'ending_mercy',
+    isEnding: true,
+    title: 'MISERICORDIA',
+    text: 'You walk out of the church into the cold night. Behind you, Padre Joaquín kneels. By morning he will be gone — to a monastery in the mountains, or off a cliff. You will never know. You sit by the river and watch the dark water carry away whatever it still carries. Mercy is its own punishment, you tell yourself. You hope Elena would forgive you. You are not sure she would.',
+    epilogue: 'Mercy is the heaviest verdict. You will carry it the rest of your life.'
+  },
+
+  {
+    id: 'ending_vengeance',
+    isEnding: true,
+    title: 'VENGANZA',
+    text: 'You take the heavy candlestick from the altar. The priest does not flinch — perhaps he wanted this. By the time the village wakes, two men are dead in the church: the murderer, and the foreigner who killed him. The bus leaves without you. Elena has been avenged, but in the only way her killer would have understood: with another sin.',
+    epilogue: 'Vengeance is a circle. You ended one death by becoming another.'
+  }
+];
+
+// =====================================================================
+// GAME STATE
+// =====================================================================
+let state = {
+  currentScene: 'arrival',
+  knownWords: {},      // {es: en}
+  clues: [],
+  trust: {},           // {character: number}
+  visitedScenes: [],
+  characters: [],
+  flags: {}
+};
+
+function save() {
+  try { sessionStorage.setItem('desaparicion', JSON.stringify(state)); } catch(e) {}
+}
+function load() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem('desaparicion'));
+    if (s) state = s;
+  } catch(e) {}
+}
+
+function findScene(id) {
+  return SCENES.find(s => s.id === id);
+}
+
+function meetsRequirement(req) {
+  if (!req) return true;
+  if (Array.isArray(req)) {
+    return req.every(r => state.visitedScenes.includes(r));
+  }
+  return state.visitedScenes.includes(req);
+}
+
+function meetsCondition(cond) {
+  if (!cond) return true;
+  if (cond.startsWith('!')) {
+    return !state.visitedScenes.includes(cond.slice(1));
+  }
+  return state.visitedScenes.includes(cond);
+}
+
+// =====================================================================
+// SPANISH TEXT RENDERER (clickable words)
+// =====================================================================
+function renderSpanish(text) {
+  // Split on word boundaries while preserving punctuation
+  const tokens = text.split(/(\s+|[¿?¡!.,;:()"])/);
+  return tokens.map(tok => {
+    if (/^\s+$/.test(tok) || /^[¿?¡!.,;:()"]$/.test(tok) || tok === '') {
+      return tok;
+    }
+    const lower = tok.toLowerCase();
+    // Strip trailing punctuation for lookup
+    const cleanWord = lower.replace(/[.,;:!?¿¡]$/, '');
+    const gloss = VOCAB[cleanWord] || VOCAB[lower];
+    if (gloss) {
+      const isKnown = state.knownWords[cleanWord];
+      const cls = `word ${isKnown ? 'known' : ''}`;
+      return `<span class="${cls}" data-word="${cleanWord}" data-gloss="${gloss.replace(/"/g, '&quot;')}" onclick="touchWord(this)">${tok}<span class="gloss">${gloss}</span></span>`;
+    }
+    return tok;
+  }).join('');
+}
+
+function touchWord(el) {
+  el.classList.add('touched');
+  const w = el.dataset.word;
+  const g = el.dataset.gloss;
+  if (w && g && !state.knownWords[w]) {
+    state.knownWords[w] = g;
+    save();
+    updateTabs();
+  }
+  // remove "touched" after a moment so it can be tapped again
+  setTimeout(() => el.classList.remove('touched'), 3500);
+}
+
+// =====================================================================
+// SCENE RENDERER
+// =====================================================================
+function renderScene(scene) {
+  if (scene.isEnding) return renderEnding(scene);
+
+  // record visit
+  if (!state.visitedScenes.includes(scene.id)) {
+    state.visitedScenes.push(scene.id);
+  }
+
+  // apply scene effects
+  if (scene.addClue) {
+    if (!state.clues.some(c => c.text === scene.addClue.text)) {
+      state.clues.push(scene.addClue);
+    }
+  }
+  if (scene.addCharacter && !state.characters.includes(scene.addCharacter)) {
+    state.characters.push(scene.addCharacter);
+  }
+  if (scene.setTrust) {
+    for (const k in scene.setTrust) {
+      state.trust[k] = (state.trust[k] || 0) + scene.setTrust[k];
+    }
+  }
+  save();
+
+  let html = `
+    <div class="scene-header">
+      <div class="day-marker">${scene.day || ''}</div>
+      <div class="location">${scene.location || ''}</div>
+    </div>
+    <div class="scene-desc">${scene.desc || ''}</div>
+  `;
+
+  if (scene.dialogue) {
+    scene.dialogue.forEach(line => {
+      html += `
+        <div class="dialogue">
+          <div class="speaker-line">${line.speaker} ${line.mood ? `<span class="mood">${line.mood}</span>` : ''}</div>
+          <div class="spanish">${renderSpanish(line.es)}</div>
+        </div>
+      `;
+    });
+  }
+
+  if (scene.choices && scene.choices.length) {
+    html += `<div class="choices"><div class="choice-prompt">— ¿Qué dice usted? —</div>`;
+    scene.choices.forEach((choice, i) => {
+      // filter by condition
+      if (choice.condition && !meetsCondition(choice.condition)) return;
+      const locked = choice.requires && !meetsRequirement(choice.requires);
+      html += `
+        <div class="choice ${locked ? 'requires-word' : ''}" onclick="${locked ? 'showLocked()' : `pick(${i})`}">
+          <span class="choice-es">${renderSpanish(choice.es)}</span>
+          <span class="choice-en">"${choice.en}"</span>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  document.getElementById('game').innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function renderEnding(scene) {
+  const html = `
+    <div class="ending">
+      <div class="day-marker">— FIN —</div>
+      <h1 class="ending-title">${scene.title}</h1>
+      <div class="ending-text">${scene.text}</div>
+      <div class="ending-text" style="font-style:italic; color:var(--candle);">${scene.epilogue}</div>
+      <div class="ending-stats">
+        <strong>${Object.keys(state.knownWords).length}</strong> Spanish words learned<br>
+        <strong>${state.clues.length}</strong> clues uncovered<br>
+        <strong>${state.characters.length}</strong> villagers met
+      </div>
+      <button class="continue" onclick="resetGame()">▶ Play Again — New Choices</button>
+    </div>
+  `;
+  document.getElementById('game').innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+function pick(idx) {
+  const scene = findScene(state.currentScene);
+  const choice = scene.choices[idx];
+  if (choice.learn) {
+    choice.learn.forEach(w => {
+      const g = VOCAB[w.toLowerCase()];
+      if (g) state.knownWords[w.toLowerCase()] = g;
+    });
+  }
+  if (choice.flag) {
+    Object.assign(state.flags, choice.flag);
+  }
+  state.currentScene = choice.next;
+  save();
+  updateTabs();
+  renderScene(findScene(choice.next));
+}
+
+function showLocked() {
+  toast('You need more evidence for this choice');
+}
+
+// =====================================================================
+// JOURNAL
+// =====================================================================
+function updateTabs() {
+  document.getElementById('tab-clues').textContent = state.clues.length;
+  document.getElementById('tab-vocab').textContent = Object.keys(state.knownWords).length;
+}
+
+function openJournal(tab) {
+  const j = document.getElementById('journal');
+  const content = document.getElementById('journal-content');
+  let html = `<h1 class="journal-title">El Diario</h1>`;
+
+  if (tab === 'clues') {
+    html += `<div class="journal-sub">Clues — ${state.clues.length} found</div>`;
+    html += `<div class="journal-section">`;
+    if (state.clues.length === 0) {
+      html += `<div class="clue">No clues yet. Talk to people. Listen carefully.</div>`;
+    } else {
+      state.clues.forEach(c => {
+        html += `
+          <div class="clue" style="${c.major ? 'border-left-color: var(--blood); border-left-width: 3px;' : ''}">
+            ${c.text}
+            <span class="source">— ${c.source}</span>
+          </div>
+        `;
+      });
+    }
+    html += `</div>`;
+  } else if (tab === 'vocab') {
+    const words = Object.entries(state.knownWords).sort();
+    html += `<div class="journal-sub">Vocabulary — ${words.length} words</div>`;
+    html += `<div class="journal-section">`;
+    if (words.length === 0) {
+      html += `<div class="clue">Tap Spanish words during conversation to learn them.</div>`;
+    } else {
+      words.forEach(([es, en]) => {
+        html += `<div class="vocab-entry"><span class="v-es">${es}</span><span class="v-en">${en}</span></div>`;
+      });
+    }
+    html += `</div>`;
+  } else if (tab === 'cast') {
+    html += `<div class="journal-sub">Characters Met</div>`;
+    html += `<div class="journal-section">`;
+    if (state.characters.length === 0) {
+      html += `<div class="clue">No one yet.</div>`;
+    } else {
+      state.characters.forEach(c => {
+        const char = CHARACTERS[c];
+        if (!char) return;
+        const trust = state.trust[c] || 0;
+        let trustLabel = 'Neutral', cls = 'trust-neutral';
+        if (trust >= 2) { trustLabel = 'Trusts you'; cls = 'trust-positive'; }
+        else if (trust >= 1) { trustLabel = 'Warming to you'; cls = 'trust-positive'; }
+        else if (trust <= -2) { trustLabel = 'Hostile'; cls = 'trust-negative'; }
+        else if (trust <= -1) { trustLabel = 'Suspicious of you'; cls = 'trust-negative'; }
+        html += `
+          <div class="character-card">
+            <div class="character-name">${char.name}</div>
+            <div class="character-desc">${char.desc}</div>
+            <div class="character-trust ${cls}">${trustLabel}</div>
+          </div>
+        `;
+      });
+    }
+    html += `</div>`;
+  }
+
+  html += `<button class="close-journal" onclick="closeJournal()">Cerrar</button>`;
+  content.innerHTML = html;
+  j.classList.add('open');
+}
+
+function closeJournal() {
+  document.getElementById('journal').classList.remove('open');
+}
+
+// =====================================================================
+// MISC
+// =====================================================================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function startGame() {
+  document.getElementById('title-screen').style.display = 'none';
+  load();
+  updateTabs();
+  renderScene(findScene(state.currentScene));
+}
+
+function resetGame() {
+  state = {
+    currentScene: 'arrival',
+    knownWords: {},
+    clues: [],
+    trust: {},
+    visitedScenes: [],
+    characters: [],
+    flags: {}
+  };
+  save();
+  updateTabs();
+  renderScene(findScene('arrival'));
+}
+
+// add character "anciano" to cast
+CHARACTERS.anciano = {
+  name: 'El Anciano',
+  desc: 'The old man in the plaza. Sees everything. Says little.',
+  secret: 'Knows more about the village\'s sins than he lets on.'
+};
+</script>
+
+</body>
+</html>
